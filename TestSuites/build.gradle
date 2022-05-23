@@ -1,0 +1,67 @@
+plugins {
+    id 'groovy'
+    // This is added by default through the groovy plugin, through the java plugin but wanted to be explicit for the example
+    id 'jvm-test-suite'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+// Create a new configuration so we can add dependencies for our func test suite
+configurations {
+    functionalTestImplementation {
+        description = "Func test configuration"
+    }
+}
+
+dependencies {
+    // This is the default configuration given to us by the java plugin, and all test configurations receive implementation dependencies
+    implementation 'org.apache.groovy:groovy:4.0.0'
+
+    // This is the default test configuration given to us by the java plugin, only tests will be able to see these dependencies
+    testImplementation 'org.spockframework:spock-core:2.2-M1-groovy-4.0'
+
+    // this is our custom configuration, only classes in the functionalTest source set can see these dependencies
+    functionalTestImplementation 'org.spockframework:spock-core:2.2-M1-groovy-4.0'
+}
+
+// This is where we can configure our test suites
+testing {
+    suites {
+        // This is the default test suite named test
+        test {
+            // tell gradle and the java  plugin we want to use spock so it can configure some more boilerplate stuff for us
+            useSpock()
+        }
+
+        // Our brand new test suite called functionalTest! We tell gradle it is a JvmTestSuite  (Since we are making a java project)
+        functionalTest(JvmTestSuite) {
+            // tell gradle we want to use spock
+            useSpock()
+            // The project is only defaulted to be a declared dependency on the pre configured test test suite.
+            // So we declare a dependency on the project in our new test suite
+            dependencies {
+                implementation project
+            }
+
+            // We can specify targets for when this test suite should run in relation to other test suites
+            targets {
+                all {
+                    testTask.configure {
+                        shouldRunAfter(testing.suites.test)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// By default the java plugin configures the build task to depend on test but now we want it to depend on functionTest too
+// the build lifecycle task depends on the check task so adding it to check will cover all of our bases for a test suite
+tasks.named('check') {
+    dependsOn(testing.suites.functionalTest)
+}
