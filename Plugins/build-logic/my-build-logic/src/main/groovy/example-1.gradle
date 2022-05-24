@@ -1,0 +1,14 @@
+plugins {
+    id "application"
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
+tasks.register("example1task") {
+    doLast {
+        println "Hi from the example task"
+    }
+    group = "rob"
+}

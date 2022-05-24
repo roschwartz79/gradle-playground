@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories.gradlePluginPortal()
+    includeBuild("../build-logic")
+}
+
+dependencyResolutionManagement {
+    repositories.mavenCentral()
+}
+
+rootProject.name = "my-project"
+
+include("my-application")
